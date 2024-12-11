@@ -1,8 +1,8 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import user from "./user";
+import shoppingList from "./shopping-list";
 
 export const rootReducer = combineReducers({
-  [user.name]: user.reducer,
+  [shoppingList.name]: shoppingList.reducer,
 });
 
 export default rootReducer;

@@ -1,38 +1,89 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-import { Text, Flex, Input, Button } from "components";
-import { StyledForm } from "./styled";
-import { useHandleData } from "./hooks";
+import { Flex, Text } from "components";
+import { ElementForm, ItemCard } from "./components";
+import { StyledListWrapper, StyledFormWrapper } from "./styled";
+import { StyledSelect } from "./components/element-form/styled";
+
+import { useAppSelector } from "store/store";
+import { addItem } from "store/shopping-list";
+import { CategoryEnum } from "store/shopping-list/types";
 
 const Home: React.FC = () => {
-  const { inputValue, inputChangeHandler, submitHandler, keyDownHandler } =
-    useHandleData();
+  const list = useAppSelector((state) => state.shoppingList.shoppingList);
+
+  const [selectOption, setSelectOption] = useState("All");
+  const [filteredList, setFilteredList] = useState(list);
+
+  const fruitValues = ["All", ...Object.values(CategoryEnum)];
+
+  useEffect(() => {
+    setFilteredList(list);
+  }, [list]);
+
+  const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectOption(e.target.value);
+
+    if (Object.values(CategoryEnum).includes(e.target.value as CategoryEnum)) {
+      const res = list.filter((item) => item.category === e.target.value);
+
+      setFilteredList(res);
+    } else {
+      setFilteredList(list);
+    }
+  };
 
   return (
-    <Flex justifyContent="center" alignItems="center" height="100%" py="120px">
-      <Flex width="320px" flexDirection="column">
-        <Text fontSize="40px" fontWeight="600" mb="24px">
-          GitHub Profile
-        </Text>
+    <Flex
+      justifyContent="center"
+      alignItems="center"
+      flexDirection="column"
+      height="100%"
+      py="20px"
+    >
+      <Text mb="12px" as="h2">
+        Add to shopping list
+      </Text>
 
-        <Text textAlign="start" width="100%" mb="14px">
-          Enter GitHub profile name
-        </Text>
+      <StyledFormWrapper>
+        <ElementForm action={addItem} />
+      </StyledFormWrapper>
 
-        <StyledForm onSubmit={submitHandler}>
-          <Input
-            mb="14px"
-            value={inputValue}
-            placeholder={"Enter Name"}
-            onChange={inputChangeHandler}
-            onKeyDown={keyDownHandler}
-          />
+      <Text mb="12px" as="h2">
+        Shopping list
+      </Text>
 
-          <Button width="100%" type="submit">
-            Check Profile
-          </Button>
-        </StyledForm>
+      <Flex width="320px" flexDirection="column" gap="8px">
+        <label htmlFor="category" style={{ width: "100%" }}>
+          Choose category
+        </label>
+
+        <StyledSelect
+          name="category"
+          value={selectOption}
+          onChange={(e) => onSelectChange(e)}
+        >
+          {fruitValues.map((key) => {
+            return (
+              <option value={key} key={key}>
+                {key}
+              </option>
+            );
+          })}
+        </StyledSelect>
       </Flex>
+
+      <StyledListWrapper>
+        {filteredList.length ? (
+          filteredList.map((item, index) => {
+            return <ItemCard key={item.id} listElement={item} />;
+          })
+        ) : (
+          <Flex height="300px" justifyContent="center" alignItems="center">
+            <Text as="h2">Ooops list is empty</Text>
+          </Flex>
+        )}
+      </StyledListWrapper>
     </Flex>
   );
 };
